@@ -1,6 +1,17 @@
 "use client";
 
-import { Button, Input, Row, Card, message, Space, Tag, Switch } from "antd";
+import {
+  Button,
+  Input,
+  Row,
+  Card,
+  message,
+  Space,
+  Tag,
+  Switch,
+  Table,
+  TableProps,
+} from "antd";
 import * as React from "react";
 import { PlusCircleTwoTone } from "@ant-design/icons";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
@@ -12,6 +23,7 @@ import {
   deleteTask,
   setIsDoneTask,
 } from "@/lib/features/todo/todoSlice";
+import userApi from "@/service/api/userApi/userService";
 
 const TodoList = () => {
   const todos = useAppSelector((state) => state.todo.todoList);
@@ -67,6 +79,53 @@ const TodoItem = (todo: { isDone: boolean; id: string; content: string }) => {
   );
 };
 
+const UserTable = () => {
+  const [listUser, setListUser] = React.useState([]);
+  const param = {
+    page: 1,
+    pageSize: 3,
+  };
+  const columns: TableProps<any>["columns"] = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      render: (text) => <a>{text}</a>,
+    },
+    {
+      title: "Age",
+      dataIndex: "age",
+      key: "age",
+    },
+    {
+      title: "Address",
+      dataIndex: "address",
+      key: "address",
+    },
+    {
+      title: "Tags",
+      key: "tags",
+      dataIndex: "tags",
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Space size="middle">
+          <a>Invite {record.name}</a>
+          <a>Delete</a>
+        </Space>
+      ),
+    },
+  ];
+  React.useEffect(() => {
+    userApi.getUserCustomer(param).then((res) => {
+      setListUser(res.users);
+    });
+  }, []);
+  return <Table dataSource={listUser} columns={columns} />;
+};
+
 export default function Todos() {
   const dispatch = useAppDispatch();
   const [value, setValue] = useState("");
@@ -112,6 +171,7 @@ export default function Todos() {
           <TodoList />
         </Card>
       </Row>
+      <UserTable></UserTable>
     </>
   );
 }
